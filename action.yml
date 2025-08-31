@@ -13,12 +13,12 @@ inputs:
     description:
       The template to use for the deployment.
     required: false
-    default: 'https://github.com/aitorllj93/astro-theme-spaceship.git'
+    default: aitorllj93/astro-theme-spaceship
   spaceship_template_branch:
     description:
       The template branch to use for the deployment.
     required: false
-    default: 'main'
+    default: main
   site:
     description: The site name to use in the site metadata.
     required: true
@@ -28,7 +28,7 @@ inputs:
   default_locale:
     description: The default locale for the site.
     required: false
-    default: 'en'
+    default: en
   title:
     description: The title to use in the site metadata.
     required: true
@@ -75,25 +75,18 @@ inputs:
     required: false
     default: 'true'
 
-# Define your outputs here.
-outputs:
-  build_dir:
-    description: The path to the built files
-    value: tmp/spaceship/dist
-
 runs:
   using: composite
   steps:
-    - name: Checkout Vault
-      uses: actions/checkout
-      with:
-        path: tmp/vault
     - name: Checkout Template
-      uses: actions/checkout
+      uses: actions/checkout@v4
       with:
-        path: tmp/spaceship
         repository: ${{ inputs.spaceship_template }}
         ref: ${{ inputs.spaceship_template_branch }}
+    - name: Checkout Vault
+      uses: actions/checkout@v4
+      with:
+        path: src/content/vault
 
     - name: Setup Node
       uses: actions/setup-node@v4
@@ -102,15 +95,13 @@ runs:
 
     - name: Install
       shell: "bash"
-      working-directory: tmp/spaceship
       run: npm install
 
     - name: Make envfile
       uses: SpicyPizza/create-envfile@v2.0
       with:
-        directory: tmp/spaceship
-        envkey_OBSIDIAN_VAULT_DIR: tmp/vault
-        envkey_SPACESHIP_SITE: {{ inputs.site }}
+        envkey_OBSIDIAN_VAULT_DIR: src/content/vault
+        envkey_SPACESHIP_SITE: ${{ inputs.site }}
         envkey_SPACESHIP_BASE: ${{ inputs.base }}
         envkey_SPACESHIP_DEFAULT_LOCALE: ${{ inputs.default_locale }}
         envkey_SPACESHIP_TITLE: ${{ inputs.title }}
@@ -128,10 +119,9 @@ runs:
 
     - name: Build
       shell: "bash"
-      working-directory: tmp/spaceship
       run: npm run build
 
     - name: Upload Pages Artifact
       uses: actions/upload-pages-artifact@v3
       with:
-        path: "tmp/spaceship/dist/"
+        path: dist
