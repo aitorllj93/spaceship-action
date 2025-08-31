@@ -1,9 +1,9 @@
 # Create a GitHub Action Using TypeScript
 
-[![GitHub Super-Linter](https://github.com/actions/typescript-action/actions/workflows/linter.yml/badge.svg)](https://github.com/super-linter/super-linter)
-![CI](https://github.com/actions/typescript-action/actions/workflows/ci.yml/badge.svg)
-[![Check dist/](https://github.com/actions/typescript-action/actions/workflows/check-dist.yml/badge.svg)](https://github.com/actions/typescript-action/actions/workflows/check-dist.yml)
-[![CodeQL](https://github.com/actions/typescript-action/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/actions/typescript-action/actions/workflows/codeql-analysis.yml)
+[![GitHub Super-Linter](https://github.com/aitorllj93/spaceship-action/actions/workflows/linter.yml/badge.svg)](https://github.com/super-linter/super-linter)
+![CI](https://github.com/aitorllj93/spaceship-action/actions/workflows/ci.yml/badge.svg)
+[![Check dist/](https://github.com/aitorllj93/spaceship-action/actions/workflows/check-dist.yml/badge.svg)](https://github.com/aitorllj93/spaceship-action/actions/workflows/check-dist.yml)
+[![CodeQL](https://github.com/aitorllj93/spaceship-action/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/aitorllj93/spaceship-action/actions/workflows/codeql-analysis.yml)
 [![Coverage](./badges/coverage.svg)](./badges/coverage.svg)
 
 Use this template to bootstrap the creation of a TypeScript action. :rocket:
@@ -194,11 +194,11 @@ steps:
     id: test-action
     uses: ./
     with:
-      milliseconds: 1000
+      site: 'https://aitorllamas.com'
 
   - name: Print Output
     id: output
-    run: echo "${{ steps.test-action.outputs.time }}"
+    run: echo "${{ steps.test-action.outputs.build_dir }}"
 ```
 
 For example workflow runs, check out the
@@ -223,13 +223,13 @@ steps:
 
   - name: Test Local Action
     id: test-action
-    uses: actions/typescript-action@v1 # Commit with the `v1` tag
+    uses: aitorllj93/spaceship-action@v1 # Commit with the `v1` tag
     with:
-      milliseconds: 1000
+      site: 'https://aitorllamas.com'
 
   - name: Print Output
     id: output
-    run: echo "${{ steps.test-action.outputs.time }}"
+    run: echo "${{ steps.test-action.outputs.build_dir }}"
 ```
 
 ## Publishing a New Release

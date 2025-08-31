@@ -27246,20 +27246,36 @@ function requireCore () {
 
 var coreExports = requireCore();
 
-/**
- * Waits for a number of milliseconds.
- *
- * @param milliseconds The number of milliseconds to wait.
- * @returns Resolves with 'done!' after the wait is over.
- */
-async function wait(milliseconds) {
-    return new Promise((resolve) => {
-        if (isNaN(milliseconds))
-            throw new Error('milliseconds is not a number');
-        setTimeout(() => resolve('done!'), milliseconds);
-    });
-}
-
+const INPUTS_TO_ENVS = new Map([
+    ['base', 'SPACESHIP_BASE'],
+    ['site', 'SPACESHIP_SITE'],
+    ['default_locale', 'SPACESHIP_DEFAULT_LOCALE'],
+    ['title', 'SPACESHIP_TITLE'],
+    ['description', 'SPACESHIP_DESCRIPTION'],
+    ['logo', 'SPACESHIP_LOGO'],
+    ['author', 'SPACESHIP_AUTHOR'],
+    [
+        'features_article_author_enabled',
+        'SPACESHIP_FEATURES_ARTICLE_AUTHOR_ENABLED'
+    ],
+    ['features_article_date_enabled', 'SPACESHIP_FEATURES_ARTICLE_DATE_ENABLED'],
+    ['features_right_mode', 'SPACESHIP_FEATURES_RIGHT_MODE'],
+    ['features_right_map_enabled', 'SPACESHIP_FEATURES_RIGHT_MAP_ENABLED'],
+    ['features_right_graph_enabled', 'SPACESHIP_FEATURES_RIGHT_GRAPH_ENABLED'],
+    ['features_right_toc_enabled', 'SPACESHIP_FEATURES_RIGHT_TOC_ENABLED'],
+    ['features_right_links_enabled', 'SPACESHIP_FEATURES_RIGHT_LINKS_ENABLED'],
+    [
+        'features_right_backlinks_enabled',
+        'SPACESHIP_FEATURES_RIGHT_BACKLINKS_ENABLED'
+    ]
+]);
+const buildEnvFile = () => {
+    let result = '';
+    for (const [key, val] of Array.from(INPUTS_TO_ENVS)) {
+        result += `${val}=${coreExports.getInput(key)}\n`;
+    }
+    return result;
+};
 /**
  * The main function for the action.
  *
@@ -27267,15 +27283,16 @@ async function wait(milliseconds) {
  */
 async function run() {
     try {
-        const ms = coreExports.getInput('milliseconds');
+        const template = coreExports.getInput('template');
+        const [repository, branch = 'main'] = template.split('#');
+        coreExports.debug(`Checking out template "${repository}" with branch "${branch}"...`);
+        const env = buildEnvFile();
+        coreExports.debug(env);
+        coreExports.debug('Checking out vault...');
         // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-        coreExports.debug(`Waiting ${ms} milliseconds ...`);
-        // Log the current timestamp, wait, then log the new timestamp
-        coreExports.debug(new Date().toTimeString());
-        await wait(parseInt(ms, 10));
-        coreExports.debug(new Date().toTimeString());
+        coreExports.debug('Generating env file...');
         // Set outputs for other workflow steps to use
-        coreExports.setOutput('time', new Date().toTimeString());
+        coreExports.setOutput('build_dir', '');
     }
     catch (error) {
         // Fail the workflow run if an error occurs

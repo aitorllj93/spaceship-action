@@ -1,24 +1,137 @@
-name: The name of your action here
-description: Provide a description here
-author: Your name or organization here
+name: Spaceship
+description: Deploy your Obsidian Vault to GH Pages
+author: aitorllj93
 
 # Add your action's branding here. This will appear on the GitHub Marketplace.
 branding:
-  icon: heart
-  color: red
+  icon: book
+  color: purple
 
 # Define your inputs here.
 inputs:
-  milliseconds:
-    description: Your input description here
+  spaceship_template:
+    description:
+      The template to use for the deployment.
+    required: false
+    default: 'https://github.com/aitorllj93/astro-theme-spaceship.git'
+  spaceship_template_branch:
+    description:
+      The template branch to use for the deployment.
+    required: false
+    default: 'main'
+  site:
+    description: The site name to use in the site metadata.
     required: true
-    default: '1000'
+  base:
+    description: The base URL for the site.
+    required: false
+  default_locale:
+    description: The default locale for the site.
+    required: false
+    default: 'en'
+  title:
+    description: The title to use in the site metadata.
+    required: true
+  description:
+    description: The description to use in the site metadata.
+    required: false
+  logo:
+    description: The SVG logo to use in the site metadata.
+    required: false
+  author:
+    description: The author name to use in the site metadata.
+    required: false
+  features_article_author_enabled:
+    description: Enable the article author feature.
+    required: false
+    default: 'true'
+  features_article_date_enabled:
+    description: Enable the article date feature.
+    required: false
+    default: 'true'
+  features_right_mode:
+    description:
+      The right sidebar display mode. Options are "column" or "tabset".
+    required: false
+    default: 'tabset'
+  features_right_map_enabled:
+    description: Enable the right sidebar map feature.
+    required: false
+    default: 'true'
+  features_right_graph_enabled:
+    description: Enable the right sidebar graph feature.
+    required: false
+    default: 'true'
+  features_right_toc_enabled:
+    description: Enable the right sidebar table of contents feature.
+    required: false
+    default: 'true'
+  features_right_links_enabled:
+    description: Enable the right sidebar links feature.
+    required: false
+    default: 'true'
+  features_right_backlinks_enabled:
+    description: Enable the right sidebar backlinks feature.
+    required: false
+    default: 'true'
 
 # Define your outputs here.
 outputs:
-  time:
-    description: Your output description here
+  build_dir:
+    description: The path to the built files
+    value: tmp/spaceship/dist
 
 runs:
-  using: node24
-  main: dist/index.js
+  using: composite
+  steps:
+    - name: Checkout Vault
+      uses: actions/checkout
+      with:
+        path: tmp/vault
+    - name: Checkout Template
+      uses: actions/checkout
+      with:
+        path: tmp/spaceship
+        repository: ${{ inputs.spaceship_template }}
+        ref: ${{ inputs.spaceship_template_branch }}
+
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+
+    - name: Install
+      shell: "bash"
+      working-directory: tmp/spaceship
+      run: npm install
+
+    - name: Make envfile
+      uses: SpicyPizza/create-envfile@v2.0
+      with:
+        directory: tmp/spaceship
+        envkey_OBSIDIAN_VAULT_DIR: tmp/vault
+        envkey_SPACESHIP_SITE: {{ inputs.site }}
+        envkey_SPACESHIP_BASE: ${{ inputs.base }}
+        envkey_SPACESHIP_DEFAULT_LOCALE: ${{ inputs.default_locale }}
+        envkey_SPACESHIP_TITLE: ${{ inputs.title }}
+        envkey_SPACESHIP_DESCRIPTION: ${{ inputs.description }}
+        envkey_SPACESHIP_LOGO: ${{ inputs.logo }}
+        envkey_SPACESHIP_AUTHOR: ${{ inputs.author }}
+        envkey_SPACESHIP_FEATURES_ARTICLE_AUTHOR_ENABLED: ${{ inputs.features_article_author_enabled }}
+        envkey_SPACESHIP_FEATURES_ARTICLE_DATE_ENABLED: ${{ inputs.features_article_date_enabled }}
+        envkey_SPACESHIP_FEATURES_RIGHT_MODE: ${{ inputs.features_right_mode }}
+        envkey_SPACESHIP_FEATURES_RIGHT_MAP_ENABLED: ${{ inputs.features_right_map_enabled }}
+        envkey_SPACESHIP_FEATURES_RIGHT_GRAPH_ENABLED: ${{ inputs.features_right_graph_enabled }}
+        envkey_SPACESHIP_FEATURES_RIGHT_TOC_ENABLED: ${{ inputs.features_right_toc_enabled }}
+        envkey_SPACESHIP_FEATURES_RIGHT_LINKS_ENABLED: ${{ inputs.features_right_links_enabled }}
+        envkey_SPACESHIP_FEATURES_RIGHT_BACKLINKS_ENABLED: ${{ inputs.features_right_backlinks_enabled }}
+
+    - name: Build
+      shell: "bash"
+      working-directory: tmp/spaceship
+      run: npm run build
+
+    - name: Upload Pages Artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: "tmp/spaceship/dist/"
